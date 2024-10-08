@@ -67,8 +67,10 @@
     </style>
 </head>
 <body>
-    <h1>Upload Image and Display Coordinates</h1>
+    <h1>Upload Image and Display Coordinates and also display its size</h1>
     <input type="file" id="fileInput" accept="image/*">
+    <br><br>
+    <p id="imageSize"></p>
     <div id="image-container" style="position: relative; display: inline-block;">
         <img id="image" alt="Uploaded Image">
     </div>
@@ -76,6 +78,20 @@
     <div id="coords-formats"></div>
 
     <script>
+        //for size of an image
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const img = new Image();
+                img.onload = function() {
+                    const width = img.width;
+                    const height = img.height;
+                    document.getElementById('imageSize').textContent = `Width: ${width}px, Height: ${height}px`;
+                }
+                img.src = URL.createObjectURL(file);
+            }
+        });
+        
         const fileInput = document.getElementById('fileInput');
         const image = document.getElementById('image');
         const coordinatesDisplay = document.getElementById('coordinates');
