@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image and Display Coordinates</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            text-align: center;
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(to right, #a8edea, #fed6e3);
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        #image {
+            display: none;
+            border: 2px solid #2980b9;
+            border-radius: 10px;
+            max-width: 100%;
+            position: relative;
+            /* margin-top: 20px; */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        #coordinates, #coords-formats {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #555;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            display: inline-block;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        input[type="file"] {
+            padding: 10px;
+            border: 2px solid #2980b9;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #fff;
+            transition: background-color 0.3s;
+        }
+        input[type="file"]:hover {
+            background-color: #ecf0f1;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            #coordinates, #coords-formats {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload Image and Display Coordinates</h1>
+    <input type="file" id="fileInput" accept="image/*">
+    <div id="image-container" style="position: relative; display: inline-block;">
+        <img id="image" alt="Uploaded Image">
+    </div>
+    <div id="coordinates"></div>
+    <div id="coords-formats"></div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const image = document.getElementById('image');
+        const coordinatesDisplay = document.getElementById('coordinates');
+        const coordsFormatsDisplay = document.getElementById('coords-formats');
+        const imageContainer = document.getElementById('image-container');
+        const coordinatesArray = [];
+
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    image.src = e.target.result;
+                    image.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        image.addEventListener('click', function(event) {
+            const rect = image.getBoundingClientRect();
+            const x = Math.round(event.clientX - rect.left);
+            const y = Math.round(event.clientY - rect.top);
+
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            dot.style.left = `${x}px`;
+            dot.style.top = `${y}px`;
+            imageContainer.appendChild(dot);
+            coordinatesArray.push({ x, y });
+            coordinatesDisplay.textContent = `X: ${x}, Y: ${y}`;
+            updateCoordsFormats();
+        });
+
+        function updateCoordsFormats() {
+            if (coordinatesArray.length === 0) {
+                coordsFormatsDisplay.innerHTML = 'No coordinates to display.';
+                return;
+            }
+
+            const minX = Math.min(...coordinatesArray.map(coord => coord.x));
+            const maxX = Math.max(...coordinatesArray.map(coord => coord.x));
+            const minY = Math.min(...coordinatesArray.map(coord => coord.y));
+            const maxY = Math.max(...coordinatesArray.map(coord => coord.y));
+            const rectCoords = `${minX},${minY},${maxX},${maxY}`;
+            const centerX = Math.round((minX + maxX) / 2);
+            const centerY = Math.round((minY + maxY) / 2);
+            const radius = Math.round(Math.max(maxX - minX, maxY - minY) / 2);
+            const circleCoords = `${centerX},${centerY},${radius}`;
+            const polyCoords = coordinatesArray.flatMap(coord => [coord.x, coord.y]).join(',');
+
+            coordsFormatsDisplay.innerHTML = `
+                Rect coords: ${rectCoords}<br>
+                Circle coords: ${circleCoords}<br>
+                Polygon coords: ${polyCoords}
+            `;
+        }
+    </script>
+</body>
+</html>
